@@ -1,0 +1,44 @@
+{
+ "arm": "all_s42",
+ "step": 2048,
+ "settings": {
+  "kind": "unet_p1v2",
+  "head_seed": 42,
+  "data_seed": 42,
+  "learning_rates": {
+   "backbone": 0.001,
+   "semantic": 0.0005,
+   "trajectory": 0.001
+  },
+  "init_seed": 20260930,
+  "pretrained": {
+   "parent": "B1B",
+   "frozen": true,
+   "arch": "v2"
+  },
+  "note": "E47 all: XuanJi-v3 variant {'pforbit': True, 'lookahead': True, 'mhead': True, 'swa': True, 'pf_dim': 512} on the 1B patch-4 parent (frozen) backbone, seed 42; comparator b1bread_20261007/B1B same seed",
+  "lagrangian": {
+   "iterations": 2,
+   "physics": false,
+   "pforbit": true,
+   "lookahead": true,
+   "mhead": true,
+   "swa": true,
+   "pf_dim": 512
+  },
+  "backbone": {
+   "feat_dim": 512
+  }
+ },
+ "frozen_parent": {
+  "parent": "B1B",
+  "frozen": true,
+  "arch": "v2"
+ },
+ "pretrained": false,
+ "plan_sha256": "66d882a77e4f278710e4e180491dbdb542fd8add725b9da8ad9312863237da7e",
+ "weights": [
+  "xuanji_decoder_frozen_hairuo_1b_s42.safetensors"
+ ],
+ "parameters": 7846885
+}

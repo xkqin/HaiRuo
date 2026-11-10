@@ -1,0 +1,300 @@
+{
+ "label": "HaiRuo-1B pretrained backbone (step 12648)",
+ "code_commit": "fc7857e",
+ "run_config": {
+  "data": {
+   "artifact_root": "/data-system/qinxukun/eddygtt",
+   "augmentation": {
+    "gaussian_noise_std": 0.0,
+    "longitude_roll": true,
+    "missing_day_probability": 0.0,
+    "stripe_probability": 0.0
+   },
+   "cache_crop_alignment": 256,
+   "climatology_path": "/data-system/qinxukun/eddygtt/data_cache/climatology.zarr",
+   "dataset_name": "duacs_meta4_global",
+   "delta_stats_path": "/data-system/qinxukun/eddygtt/data_cache/train_stats/duacs_delta_1993_2016_30to15.json",
+   "expected_windows": {
+    "test": 1052,
+    "train": 8722,
+    "val": 1051
+   },
+   "field_cache_path": "/data-system/qinxukun/eddygtt/data_cache/duacs_fields_train.zarr",
+   "file_glob": "**/*.nc",
+   "global_grid": [
+    1440,
+    2880
+   ],
+   "input_channels": [
+    "sla",
+    "adt",
+    "ugosa",
+    "vgosa",
+    "ugos",
+    "vgos",
+    "err_sla",
+    "lat",
+    "lon",
+    "coriolis_f"
+   ],
+   "input_len": 30,
+   "label_qc_path": "/data-system/qinxukun/eddygtt/data_cache/tracks/meta4_label_qc.parquet",
+   "label_store_path": "/data-system/qinxukun/eddygtt/data_cache/meta4_labels.zarr",
+   "label_validation_dir": "/data-system/qinxukun/eddygtt/data_cache/label_validation",
+   "landmask_is_channel": false,
+   "loader": {
+    "multiprocessing_context": "spawn",
+    "num_workers": 8,
+    "persistent_workers": true,
+    "pin_memory": true,
+    "prefetch_factor": 1,
+    "temporal_block_size": 16,
+    "zarr_async_concurrency": 2
+   },
+   "manifest_path": "/data-system/qinxukun/eddygtt/data_cache/manifests/global_30to15.parquet",
+   "manifest_summary_path": "/data-system/qinxukun/eddygtt/data_cache/manifests/global_30to15_summary.json",
+   "meta4_anticyclonic": "/data/qinxukun/eddygtt/datasets/META4_DT_allsat_anticyclonic_19930101_20230908.nc",
+   "meta4_cyclonic": "/data/qinxukun/eddygtt/datasets/META4_DT_allsat_cyclonic_19930101_20230908.nc",
+   "min_free_gb": 100,
+   "min_input_len": 7,
+   "periodic_longitude": true,
+   "pred_len": 15,
+   "raw_root": "/data/qinxukun/eddygtt/datasets/SEALEVEL_GLO_PHY_L4_MY_008_047/files",
+   "reject_cross_split_windows": true,
+   "reject_missing_days": true,
+   "roi_mask_size": 64,
+   "samples_per_window": 1,
+   "split_years": {
+    "test": [
+     2020,
+     2022
+    ],
+    "train": [
+     1993,
+     2016
+    ],
+    "val": [
+     2017,
+     2019
+    ]
+   },
+   "stats_path": "/data-system/qinxukun/eddygtt/data_cache/train_stats/duacs_1993_2016.json",
+   "stride_days": 1,
+   "target_channels": [
+    "sla",
+    "adt",
+    "ugosa",
+    "vgosa",
+    "ugos",
+    "vgos"
+   ],
+   "track_table_path": "/data-system/qinxukun/eddygtt/data_cache/tracks/meta4_tracks.parquet",
+   "train_crop": [
+    512,
+    512
+   ],
+   "virtual_observation_weight": 0.25,
+   "spatial_index_policy": "canonical"
+  },
+  "experiment": {
+   "external_weights": false,
+   "id": "pretrain_v2_1b",
+   "mode": "pretrain",
+   "seed": 42
+  },
+  "model": {
+   "depths": [
+    6,
+    10,
+    20
+   ],
+   "dims": [
+    512,
+    1024,
+    1536
+   ],
+   "drop_path": 0.15,
+   "efaa": {
+    "chirality": true,
+    "core_ring": true,
+    "global_latent": true,
+    "grid_temporal": true,
+    "layer_scale_init": 0.0001,
+    "motion_scale": 0.05,
+    "motion_temporal": true,
+    "route_context_tokens": false,
+    "route_floor": 0.15,
+    "route_tokens_per_day": 32,
+    "routed_temporal": true,
+    "shifted_windows": true,
+    "soft_focus": true,
+    "sparse_query_neighbors": 24,
+    "window_size": 8
+   },
+   "in_channels": 10,
+   "input_len": 30,
+   "lifecycle": {
+    "decoding": "direct",
+    "future_memory_attention": true,
+    "future_token_interaction": true,
+    "num_layers": 6,
+    "query_field_fusion": true,
+    "reserve_ratio": 0.25
+   },
+   "mask_dim": 192,
+   "max_global_route_tokens": 256,
+   "max_queries_crop": 384,
+   "max_queries_global": 8192,
+   "min_input_len": 7,
+   "mlp_ratio": 4.0,
+   "name": "eddygot",
+   "num_global_latents": 256,
+   "num_heads": [
+    8,
+    16,
+    24
+   ],
+   "out_channels": 6,
+   "parameter_target": [
+    900000000,
+    1200000000
+   ],
+   "patch_size": 4,
+   "pred_len": 15,
+   "query_dim": 1536,
+   "roi_mask_size": 64,
+   "scale": "b_1b",
+   "temporal_context": {
+    "history_memory_slots": 8,
+    "recent_days": 7
+   },
+   "uncertainty": true,
+   "spatial_boundary_policy": "auto"
+  },
+  "monitoring": {
+   "gpu_power": {
+    "enabled": true,
+    "max_consecutive_below_steps": 0,
+    "minimum_ratio": 0.4,
+    "required_world_size": null,
+    "sample_interval_seconds": 1.0,
+    "warmup_steps": 1
+   }
+  },
+  "pretraining": {
+   "activation_diagnostics_interval": 25,
+   "future_days": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+   ],
+   "future_huber_delta": 1.0,
+   "initialization_policy": "scratch",
+   "loss_weights": {
+    "core_ring_contrast": 0.0,
+    "future_prediction": 1.0,
+    "grid_flow_contrast": 0.05,
+    "masked_reconstruction": 1.0
+   },
+   "mask_ratio": 0.4,
+   "stability": {
+    "activation_rms_max": 20.0,
+    "positive_skill_deadline_epoch": 10,
+    "positive_skill_threshold": 0.0,
+    "validation_grace_epochs": 3,
+    "validation_patience": 3,
+    "validation_skill_floor": -0.05
+   },
+   "task_schedule": {
+    "clean_steps": 3,
+    "contrast_start_step": 1536,
+    "forecast_only_steps": 512,
+    "masked_start_step": 512,
+    "masked_steps": 1
+   },
+   "tasks": [
+    "future_prediction",
+    "grid_flow_contrast",
+    "masked_reconstruction"
+   ],
+   "temperature": 0.1,
+   "validation": {
+    "crop": [
+     512,
+     512
+    ],
+    "crop_alignment": 32,
+    "multiprocessing_context": "spawn",
+    "num_workers": 1,
+    "per_device_batch_size": 1,
+    "prefetch_factor": 1,
+    "windows": 32
+   }
+  },
+  "schema_version": "eddygot-experiment-v1",
+  "tracking": {
+   "wandb": {
+    "enabled": false,
+    "entity": "qxk-model",
+    "mode": "offline",
+    "project": "eddygot-v2-1b"
+   }
+  },
+  "training": {
+   "activation_checkpointing": "block",
+   "betas": [
+    0.9,
+    0.95
+   ],
+   "checkpoint_interval_steps": 500,
+   "checkpoint_selection": {
+    "best_metric": "val/metric/future_macro_skill",
+    "keep_only_best_and_last": true,
+    "maximum_metrics": {
+     "val/diagnostic/max_activation_rms": 20.0
+    },
+    "min_delta": 0.0001,
+    "minimum_metrics": {
+     "val/metric/future_macro_skill": -0.001,
+     "val/metric/future_nonnegative_cells": 60,
+     "val/metric/future_worst_lead_skill": -0.1
+    },
+    "mode": "max",
+    "save_initial": true
+   },
+   "distributed": "auto",
+   "epochs": 93,
+   "global_batch_size": 64,
+   "grad_clip": 1.0,
+   "gradient_accumulation": 2,
+   "lr": 0.0002,
+   "nonfinite_gradient_policy": "error",
+   "optimizer": "adamw",
+   "per_device_batch_size": 1,
+   "precision": "bf16",
+   "scheduler": "cosine",
+   "validation_interval_epochs": 1,
+   "warmup_fraction": 0.05,
+   "weight_decay": 0.05
+  }
+ },
+ "weights": [
+  "hairuo_1b_pretrained-00001-of-00003.safetensors",
+  "hairuo_1b_pretrained-00002-of-00003.safetensors",
+  "hairuo_1b_pretrained-00003-of-00003.safetensors",
+  "hairuo_1b_pretrained.safetensors.index.json"
+ ],
+ "parameters": 1054094433
+}

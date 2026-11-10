@@ -1,0 +1,45 @@
+{
+ "arm": "ftall_s42",
+ "step": 2048,
+ "settings": {
+  "kind": "unet_p1v2ft",
+  "head_seed": 42,
+  "data_seed": 42,
+  "learning_rates": {
+   "backbone": 0.001,
+   "semantic": 0.0005,
+   "trajectory": 0.001,
+   "pretrained": 3e-05
+  },
+  "init_seed": 20260930,
+  "pretrained": {
+   "parent": "B1B",
+   "frozen": false,
+   "arch": "v2"
+  },
+  "note": "E48 ftall: E47 all (XuanJi-v3: pforbit + lookahead + mhead + swa) with the 1B patch-4 parent fine-tuned jointly at LR 3e-05 (block activation checkpointing, as E28 ft3e-5), seed 42; comparator e47boost1b_20261021/all_s42",
+  "lagrangian": {
+   "iterations": 2,
+   "physics": false,
+   "pforbit": true,
+   "lookahead": true,
+   "mhead": true,
+   "swa": true,
+   "pf_dim": 512
+  },
+  "backbone": {
+   "feat_dim": 512
+  }
+ },
+ "frozen_parent": {
+  "parent": "B1B",
+  "frozen": false,
+  "arch": "v2"
+ },
+ "pretrained": false,
+ "plan_sha256": "5cc3e14b4a8ab800d5b65f2e2a9f1feceeea7c0f974dccb3b8411091119fed6f",
+ "weights": [
+  "xuanji_decoder_hairuo_s42.safetensors"
+ ],
+ "parameters": 7846885
+}
