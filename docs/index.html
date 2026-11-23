@@ -1,0 +1,642 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#071a30">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="HaiRuo forecasts ocean eddies as fields and as objects: HaiRuo-1B, a 1.05-billion-parameter foundation model pretrained without labels on 24 years of satellite altimetry, and XuanJi, an object decoder that follows every eddy.">
+<title>HaiRuo · Forecasting Ocean Eddies</title>
+<script>document.documentElement.classList.add('js')</script>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="assets/fonts/inter-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="site.css?v=1122c">
+<link rel="preload" href="assets/data/flow_t0.png" as="image">
+<script src="site.js?v=1122c" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav on-deep" id="nav">
+  <div class="nav-inner">
+    <a class="nav-brand" href="#top" aria-label="HaiRuo, back to top"><svg viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="nb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#00a8d6"/><stop offset=".6" stop-color="#0a66d6"/><stop offset="1" stop-color="#6d4aff"/></linearGradient></defs><path d="M12 12.6c.9-.3 1.2-1.5.4-2.1-1.1-.9-2.9-.2-3.1 1.3-.3 2.1 2 3.6 3.9 2.9 2.5-.9 3.1-4.3 1.3-6.1-2.2-2.3-6.3-1.6-7.6 1.3-1.5 3.3.9 7.2 4.4 7.6 4.2.5 7.7-3.2 7-7.4" fill="none" stroke="url(#nb)" stroke-width="2.2" stroke-linecap="round"/></svg>HaiRuo</a>
+    <nav class="nav-links" aria-label="Sections">
+      <a href="#film">Film</a><a href="#motion">In motion</a><a href="#results">Results</a><a href="#enso">ENSO</a><a href="#forecasters">Forecasters</a><a href="#pretraining">HaiRuo-1B</a><a href="#xuanji">XuanJi</a><a href="#release">Weights</a>
+    </nav>
+    <button class="nav-toggle" id="menu-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="menu"><span></span><span></span></button>
+  </div>
+  <div class="nav-progress" id="nav-progress" aria-hidden="true"></div>
+  <nav class="menu" id="menu" aria-label="Menu" hidden>
+    <a href="#film">Film</a><a href="#motion">In motion</a><a href="#results">Results</a><a href="#enso">ENSO</a><a href="#forecasters">Forecasters</a><a href="#pretraining">HaiRuo-1B</a><a href="#xuanji">XuanJi</a><a href="#release">Weights</a><a href="#cite">BibTeX</a>
+  </nav>
+</header>
+
+<main id="main">
+
+<!-- Hero: a paper header over the real currents of one day -->
+<section class="hero" id="top" aria-labelledby="hero-title">
+  <div class="hero-field" id="hero-field" aria-hidden="true"><canvas id="flow-canvas"></canvas></div>
+  <div class="hero-copy">
+    <p class="hero-eyebrow">HaiRuo · Ocean Eddy Forecasting</p>
+    <h1 class="hero-title" id="hero-title">Every eddy,<br><span class="g-text sweep">fifteen days ahead.</span></h1>
+    <p class="hero-authors">Xukun Qin<sup>1,2</sup> &middot; Haochen Sun<sup>1</sup> &middot; Yuyang Tian<sup>2,3</sup> &middot; Ge Chen<sup>1,*</sup></p>
+    <p class="hero-review"><sup>1</sup>Ocean University of China &middot; <sup>2</sup>Shanghai Artificial Intelligence Laboratory &middot; <sup>3</sup>University of Science and Technology of China</p>
+    <div class="pills">
+      <a class="pill" href="https://github.com/xkqin/HaiRuo"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>Code</a>
+      <a class="pill" href="#release"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v10M5.5 8.5 10 13l4.5-4.5M4 16.5h12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Weights</a>
+      <a class="pill" href="#cite"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 4.5C5.3 4.5 5 5.4 5 7v1.2c0 1-.6 1.8-1.6 1.8 1 0 1.6.8 1.6 1.8V13c0 1.6.3 2.5 2 2.5M13 4.5c1.7 0 2 .9 2 2.5v1.2c0 1 .6 1.8 1.6 1.8-1 0-1.6.8-1.6 1.8V13c0 1.6-.3 2.5-2 2.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>BibTeX</a>
+    </div>
+  </div>
+  <p class="hero-caption"><i aria-hidden="true"></i>Real currents · DUACS altimetry · North Atlantic, 7&nbsp;July&nbsp;2018</p>
+  <a class="scroll-cue" href="#manifesto" aria-label="Scroll to the next section"><span></span></a>
+</section>
+
+<!-- Manifesto: words light up as you scroll -->
+<section class="manifesto" id="manifesto" aria-label="What HaiRuo does">
+  <div class="manifesto-pin wrap">
+    <p class="manifesto-text" data-hl="5">An eddy is an object, not a pattern on a map. HaiRuo follows every eddy, fifteen days ahead.</p>
+  </div>
+</section>
+
+<!-- The film: the whole project in 3:35. The card plays the film's own globe (a clean plate of real altimetry); a satellite circles the play button -->
+<section class="film wrap-wide" id="film" aria-label="HaiRuo, the project film">
+  <button class="film-stage reveal" id="film-stage" type="button" data-film="orbit" aria-label="Watch the HaiRuo film, 3 minutes 35 seconds, narrated">
+    <span class="film-bg"><img src="assets/film/film-still.jpg?v=1122b" alt="" width="1600" height="900" loading="lazy" decoding="async"><video muted loop playsinline preload="none" aria-hidden="true"></video></span>
+    <span class="film-orbit" aria-hidden="true"><svg viewBox="-80 -80 160 160">
+      <g transform="rotate(-22)">
+        <path class="fo-ring fo-back" pathLength="1" d="M-72 0A72 24 0 0 1 72 0"/>
+      </g>
+      <circle class="fo-disc" r="34"/>
+      <path class="fo-play" d="M-9.5-15v30l25-15z"/>
+      <g transform="rotate(-22)">
+        <path class="fo-ring fo-front" pathLength="1" d="M72 0A72 24 0 0 1 -72 0"/>
+        <g class="fo-sat"><g><circle r="8" fill="rgba(110,220,255,.22)"/><circle r="3" fill="#fff"/>
+          <animateMotion dur="8s" repeatCount="indefinite" path="M-72 0A72 24 0 0 1 72 0A72 24 0 0 1 -72 0"/>
+          <animate attributeName="opacity" dur="8s" repeatCount="indefinite" values=".3;.3;1;1;.3" keyTimes="0;.46;.54;.96;1"/>
+        </g></g>
+      </g>
+    </svg></span>
+    <span class="film-copy"><em>Project film</em><b>HaiRuo, the film</b><small>3:35 · narrated</small></span>
+  </button>
+  <div class="film-chapters reveal" role="group" aria-label="Jump into the film">
+    <span>Jump to</span><button type="button" data-film="orbit">Opening</button><button type="button" data-film="orbit" data-start="22.9">The paradox</button><button type="button" data-film="orbit" data-start="40.6">The idea</button><button type="button" data-film="orbit" data-start="62.7">HaiRuo-1B</button><button type="button" data-film="orbit" data-start="85.3">XuanJi</button><button type="button" data-film="orbit" data-start="110.7">Whole ocean</button><button type="button" data-film="orbit" data-start="123.9">Leaderboard</button><button type="button" data-film="orbit" data-start="135.4">Unlabelled basins</button><button type="button" data-film="orbit" data-start="143.7">ENSO</button><button type="button" data-film="orbit" data-start="169.2">Kuroshio eddy</button><button type="button" data-film="orbit" data-start="183.3">WenHai · XiHe</button>
+  </div>
+</section>
+
+<!-- ============================== IN MOTION ============================== -->
+<section class="chapter motion" id="motion" aria-labelledby="mo-title">
+  <div class="wrap chapter-head">
+    <p class="eyebrow g-deep reveal">In motion</p>
+    <h2 class="h2 reveal" id="mo-title">Fifteen days,<br>eddy by eddy.</h2>
+    <p class="lead reveal">North Atlantic, issued 7&nbsp;July&nbsp;2018. <strong>Held out from training.</strong></p>
+  </div>
+  <div class="wrap-wide">
+    <div class="stage reveal" id="stage">
+      <div class="stage-main">
+        <div class="stage-screen" id="stage-screen">
+          <canvas id="fc-canvas" role="img" aria-label="Animated 15-day forecast for the North Atlantic from 7 July 2018: observed sea-level anomaly in the background, HaiRuo's forecast cyclonic and anticyclonic masks as coloured fills, atlas eddy contours as white lines, and the forecast centre of every eddy with its recent track."></canvas>
+          <div class="stage-hud">
+            <p class="hud-day"><b id="hud-day">Day 0</b><span id="hud-date">7 July 2018</span></p>
+            <p class="hud-err"><span>Mean error</span><b id="hud-err">&ndash;</b></p>
+          </div>
+          <div class="stage-tip" id="stage-tip" hidden></div>
+          <p class="stage-loading" id="stage-loading">Loading the window&hellip;</p>
+        </div>
+        <div class="stage-bar">
+          <button class="stage-play" id="fc-play" type="button" aria-label="Play"><svg class="i-play" viewBox="0 0 20 20" aria-hidden="true"><path d="M6 4.2v11.6L15.6 10z"/></svg><svg class="i-pause" viewBox="0 0 20 20" aria-hidden="true"><path d="M5.5 4h3v12h-3zM11.5 4h3v12h-3z"/></svg></button>
+          <div class="scrub">
+            <input type="range" id="fc-range" min="0" max="15" step="0.01" value="0" aria-label="Forecast day" aria-valuetext="Day 0">
+            <div class="scrub-ticks" aria-hidden="true"><span>0</span><span>5</span><span>10</span><span>15</span></div>
+          </div>
+          <div class="seg stage-seg" role="group" aria-label="View">
+            <button type="button" data-view="gulf" aria-pressed="true">Gulf Stream</button>
+            <button type="button" data-view="tile" aria-pressed="false">Whole tile</button>
+          </div>
+        </div>
+        <div class="stage-jump" role="group" aria-label="Jump to">
+          <span>Jump to</span>
+          <button type="button" data-jump="0">Day 0</button>
+          <button type="button" data-jump="5">Day 5</button>
+          <button type="button" data-jump="10">Day 10</button>
+          <button type="button" data-jump="15">Day 15</button>
+          <button type="button" class="follow-chip" data-follow>Follow one cyclone</button>
+        </div>
+      </div>
+      <aside class="stage-side" aria-label="About this window">
+        <p class="spark-kicker">This window alone</p>
+        <div class="stage-stats">
+          <div><b data-count="479">479</b><span>eddies alive on day 0</span></div>
+          <div><b data-count="295">295</b><span>still in the atlas on day 15</span></div>
+          <div><b><span data-count="18.0" data-decimals="1">18.0</span><small> km</small></b><span>median day-15 error</span></div>
+        </div>
+        <div class="spark">
+          <p class="spark-kicker">Mean error by day</p>
+          <svg id="spark" viewBox="0 0 300 120" aria-hidden="true"></svg>
+        </div>
+        <div class="stage-layers" role="group" aria-label="Layers">
+          <button type="button" data-layer="masks" aria-pressed="true"><i class="lg-m"></i>HaiRuo masks</button>
+          <button type="button" data-layer="atlas" aria-pressed="true"><i class="lg-a"></i>Atlas contours</button>
+          <button type="button" data-layer="tracks" aria-pressed="true"><i class="lg-t"></i>Tracks</button>
+        </div>
+        <p class="stage-key"><span><i class="k-c"></i>cyclonic</span><span><i class="k-a"></i>anticyclonic</span><span><i class="k-o"></i>atlas centre</span></p>
+        <p class="stage-note">Hover or tap an eddy to follow it.</p>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== RESULTS ============================== -->
+<section class="chapter" id="results" aria-labelledby="res-title">
+  <div class="wrap">
+    <div class="chapter-head">
+      <p class="eyebrow g-coral reveal">Results</p>
+      <h2 class="h2 reveal" id="res-title">Whole ocean.<br>Every eddy.</h2>
+      <p class="lead reveal">48 dates, 12 tiles, 2020&ndash;2022. <strong>Every model scored once.</strong></p>
+    </div>
+    <div class="headline-result">
+      <p class="hr-num reveal" data-sheen><span data-count="25.20" data-decimals="2">25.20</span><small> km</small></p>
+      <p class="hr-text reveal"><strong>15-day centre error <i class="dir" title="lower is better">&darr;</i>,</strong><br>against 30.58&nbsp;km for the strongest baseline: &minus;18%.</p>
+    </div>
+
+    <div class="tile reveal">
+      <div class="board-top">
+        <div>
+          <p class="tile-kicker">15-day centre error (km) <i class="dir" title="lower is better">&darr;</i> · three seeds</p>
+          <p class="tile-title">Fifteen models, one protocol.</p>
+        </div>
+        <div class="seg" role="group" aria-label="Region">
+          <button type="button" data-region="0" aria-pressed="true">Whole ocean</button>
+          <button type="button" data-region="1" aria-pressed="false">Training regions</button>
+          <button type="button" data-region="2" aria-pressed="false">Never seen in training</button>
+        </div>
+      </div>
+      <div class="board pre" id="board" aria-live="polite"></div>
+      <p class="tile-note">Hatched: tracks only.</p>
+    </div>
+
+    <div class="trio reveal">
+      <div class="trio-item"><b class="g-text g-deep"><span data-count="65.4" data-decimals="1">65.4</span><small>%</small></b><span>mask mIoU over 15 days <i class="dir" title="higher is better">&uarr;</i></span><em>best baseline 63.5%</em><div class="cmp" style="--u:65.40;--b:63.50;--m:65.40" aria-hidden="true"><i></i><i></i></div></div>
+      <div class="trio-item"><b class="g-text g-deep"><span data-count="0.74" data-decimals="2">0.74</span></b><span>field skill <i class="dir" title="higher is better">&uarr;</i></span><em>best baseline 0.59</em><div class="cmp" style="--u:0.736;--b:0.588;--m:0.736" aria-hidden="true"><i></i><i></i></div></div>
+      <div class="trio-item"><b class="g-text g-deep"><span data-count="4.65" data-decimals="2">4.65</span><small> cm</small></b><span>sea-level error on day 15 <i class="dir" title="lower is better">&darr;</i></span><em>best baseline 5.39&nbsp;cm</em><div class="cmp" style="--u:4.65;--b:5.39;--m:5.39" aria-hidden="true"><i></i><i></i></div></div>
+    </div>
+
+    <div class="duo">
+      <div class="tile reveal">
+        <p class="tile-kicker">Never seen in labelled training</p>
+        <h3 class="tile-title">It carries beyond<br>the four regions.</h3>
+        <div class="vs">
+          <div class="vs-row vs-head"><span></span><strong>HaiRuo</strong><small>strongest baseline</small></div>
+          <div class="vs-row" style="--u:82.5;--b:100"><span>15-day error <i class="dir" title="lower is better">&darr;</i></span><b>27.64</b><em>33.52 <small>km</small></em></div>
+          <div class="vs-row" style="--u:84.2;--b:100"><span>Centre error <i class="dir" title="lower is better">&darr;</i></span><b>15.33</b><em>18.20 <small>km</small></em></div>
+          <div class="vs-row" style="--u:100;--b:96.7"><span>mIoU <i class="dir" title="higher is better">&uarr;</i></span><b>63.7%</b><em>61.6%</em></div>
+          <div class="vs-row" style="--u:100;--b:78.1"><span>Field skill <i class="dir" title="higher is better">&uarr;</i></span><b>0.723</b><em>0.565</em></div>
+        </div>
+        <p class="tile-note">Strongest baseline on each endpoint.</p>
+      </div>
+      <div class="tile reveal">
+        <p class="tile-kicker">Lead time · km below the best baseline <i class="dir" title="higher is better">&uarr;</i></p>
+        <h3 class="tile-title">The gap grows<br>every day.</h3>
+        <div class="lg-bars" role="img" aria-label="Centre error below the best baseline at each lead, Dev48: day 1 0.1 km, day 3 0.6, day 5 1.4, day 7 2.3, day 10 3.2, day 12 3.9, day 15 4.3 km">
+          <div><b>0.1</b><i style="--v:0.1"></i><span>day 1</span></div>
+          <div><b>0.6</b><i style="--v:0.6"></i><span>3</span></div>
+          <div><b>1.4</b><i style="--v:1.4"></i><span>5</span></div>
+          <div><b>2.3</b><i style="--v:2.3"></i><span>7</span></div>
+          <div><b>3.2</b><i style="--v:3.2"></i><span>10</span></div>
+          <div><b>3.9</b><i style="--v:3.9"></i><span>12</span></div>
+          <div class="us"><b>4.3</b><i style="--v:4.3"></i><span>15</span></div>
+        </div>
+        <p class="tile-note">Km below the best baseline at each lead, Dev48.</p>
+      </div>
+    </div>
+
+    <details class="fold reveal">
+      <summary>Full comparison, Table 1</summary>
+      <div class="fold-body">
+        <table class="ftable">
+          <thead><tr><th>Method</th><th>D15 global <i class="dir">&darr;</i></th><th>D15 training regions <i class="dir">&darr;</i></th><th>D15 other regions <i class="dir">&darr;</i></th><th>Centre (km) <i class="dir">&darr;</i></th><th>mIoU (%) <i class="dir">&uarr;</i></th><th>Field skill <i class="dir">&uarr;</i></th><th>SLA day 15 (cm) <i class="dir">&darr;</i></th></tr></thead>
+          <tbody>
+            <tr class="us"><td>HaiRuo</td><td>25.20</td><td>22.74</td><td>27.64</td><td>14.03</td><td>65.40</td><td>0.736</td><td>4.65</td></tr>
+            <tr><td>PredRNN-V2</td><td>30.58</td><td>27.53</td><td>33.61</td><td>17.01</td><td>63.31</td><td>0.556</td><td>5.39</td></tr>
+            <tr><td>PhyDNet</td><td>30.59</td><td>27.54</td><td>33.63</td><td>16.89</td><td>63.50</td><td>0.549</td><td>5.40</td></tr>
+            <tr><td>TAU</td><td>30.64</td><td>27.73</td><td>33.52</td><td>16.70</td><td>63.50</td><td>0.578</td><td>5.46</td></tr>
+            <tr><td>SimVPv2/gSTA</td><td>30.85</td><td>27.91</td><td>33.77</td><td>16.81</td><td>63.21</td><td>0.588</td><td>5.42</td></tr>
+            <tr><td>SimVP</td><td>30.96</td><td>28.11</td><td>33.80</td><td>16.85</td><td>62.15</td><td>0.520</td><td>5.80</td></tr>
+            <tr><td>U-Net</td><td>31.00</td><td>28.09</td><td>33.88</td><td>16.94</td><td>59.93</td><td>0.309</td><td>7.56</td></tr>
+            <tr><td>ConvLSTM</td><td>31.19</td><td>28.24</td><td>34.13</td><td>17.07</td><td>63.28</td><td>0.553</td><td>5.49</td></tr>
+            <tr><td>EddyNet</td><td>32.88</td><td>30.27</td><td>35.47</td><td>17.73</td><td>61.98</td><td>0.438</td><td>6.04</td></tr>
+            <tr><td>PredFormer</td><td>33.20</td><td>30.56</td><td>35.82</td><td>17.97</td><td>60.57</td><td>0.411</td><td>6.06</td></tr>
+            <tr><td>Earthformer</td><td>33.41</td><td>30.38</td><td>36.43</td><td>18.05</td><td>61.16</td><td>0.459</td><td>5.75</td></tr>
+            <tr><td>LSTM+Informer <small>tracks</small></td><td>34.05</td><td>31.21</td><td>36.89</td><td>18.29</td><td class="na">&ndash;</td><td class="na">&ndash;</td><td class="na">&ndash;</td></tr>
+            <tr><td>SwinLSTM-B</td><td>34.28</td><td>31.53</td><td>37.02</td><td>18.63</td><td>58.96</td><td>0.130</td><td>6.60</td></tr>
+            <tr><td>FNO-2d</td><td>34.90</td><td>32.14</td><td>37.65</td><td>19.01</td><td>53.83</td><td>0.251</td><td>6.48</td></tr>
+            <tr><td>Track Transformer <small>tracks</small></td><td>36.66</td><td>34.05</td><td>39.24</td><td>19.58</td><td class="na">&ndash;</td><td class="na">&ndash;</td><td class="na">&ndash;</td></tr>
+          </tbody>
+        </table>
+        <p class="tile-note">D15: centre error on day 15. Three-seed means; every paired interval excludes zero.</p>
+      </div>
+    </details>
+
+    <div class="block">
+      <figure class="paperfig dark-fig reveal">
+        <button class="paperfig-btn" type="button" data-figure="map" aria-label="Enlarge the global map"><img src="assets/fig/fig4_global_map.png" width="1513" height="792" alt="Global map of the 15-day centre-error difference between PredRNN-V2 and HaiRuo for 114,546 eddy forecasts; blue where HaiRuo has lower error; the four labelled training regions outlined." loading="lazy" decoding="async"></button>
+        <figcaption><b>114,546 eddy forecasts.</b> Blue: HaiRuo beats PredRNN-V2 on day 15. Boxes: labelled regions. <button type="button" class="linkbtn" data-figure="case">Paper case study</button></figcaption>
+      </figure>
+    </div>
+
+    <details class="fold reveal">
+      <summary>More numbers: large misses, day-1 sea level, currents</summary>
+      <div class="fold-body fold-grid">
+        <div>
+          <p class="tile-kicker">Share of eddies with a large 15-day error <i class="dir" title="lower is better">&darr;</i></p>
+          <div class="rel">
+            <div class="rel-row"><span>Above 50 km</span>
+              <div class="rel-bars">
+                <div class="rel-bar"><span>PredRNN-V2</span><i style="--v:15.2"></i><b>15.2%</b></div>
+                <div class="rel-bar us"><span>HaiRuo</span><i style="--v:10.8"></i><b>10.8%</b></div>
+              </div>
+            </div>
+            <div class="rel-row"><span>Above 100 km</span>
+              <div class="rel-bars">
+                <div class="rel-bar"><span>PredRNN-V2</span><i style="--v:3.1"></i><b>3.1%</b></div>
+                <div class="rel-bar us"><span>HaiRuo</span><i style="--v:2.2"></i><b>2.2%</b></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <p class="fold-h">Fewer eddies lost. <span>Misses beyond 50&nbsp;km fall by almost a third.</span></p>
+          <div class="facts">
+            <div><b>0.15<small style="font-size:.5em"> cm</small></b><span>day-1 sea-level error <i class="dir" title="lower is better">&darr;</i>, 44&ndash;77% below every baseline</span></div>
+            <div><b>0.901</b><span>correlation <i class="dir" title="higher is better">&uarr;</i> of forecast and observed currents; baselines at most 0.884</span></div>
+          </div>
+        </div>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ============================== ENSO ============================== -->
+<section class="chapter mist" id="enso" aria-labelledby="enso-title">
+  <div class="wrap chapter-head">
+    <p class="eyebrow g-coral reveal">ENSO</p>
+    <h2 class="h2 reveal" id="enso-title">Through El Ni&ntilde;o<br>and La Ni&ntilde;a.</h2>
+    <p class="lead reveal">No climate index in training, yet it <strong>leads all fourteen methods by 17&ndash;18%</strong> in both phases.</p>
+  </div>
+  <div class="wrap">
+    <figure class="dz-card tile reveal" data-enso>
+      <div class="lens-head">
+        <h3 class="lens-title">Every test date, by ENSO phase</h3>
+        <p class="lens-sub"><b>48</b> dates, 2020&ndash;2022 · regions never seen in labelled training</p>
+      </div>
+      <div class="dz-body">
+        <svg class="dz-beam" aria-hidden="true"></svg>
+        <div class="dz-ring"></div>
+        <div class="dz-legend" role="group" aria-label="ENSO phases"></div>
+        <div class="dz-detail" aria-live="polite"></div>
+      </div>
+    </figure>
+    <p class="lens-hint">Point at a phase to lift it out; click to open it.</p>
+
+    <details class="fold reveal">
+      <summary>More numbers: the 2018&ndash;19 El Ni&ntilde;o, drift by latitude</summary>
+      <div class="fold-body">
+        <div class="trio">
+          <div class="trio-item"><b class="g-text g-coral">&minus;14.5<small>%</small></b><span>2018&ndash;19 El Ni&ntilde;o, 17 ONI dates</span><em>15-day error <i class="dir" title="lower is better">&darr;</i> 23.34 vs 27.29&nbsp;km</em></div>
+          <div class="trio-item"><b class="g-text g-coral">&minus;15.9<small>%</small></b><span>same El Ni&ntilde;o, 9 Relative ONI dates</span><em>15-day error <i class="dir" title="lower is better">&darr;</i> 23.18 vs 27.56&nbsp;km</em></div>
+          <div class="trio-item"><b class="g-text g-ocean">&minus;17<small>%</small></b><span>tropical Pacific, where ENSO modulates eddy energy by 38%</span><em>15-day error <i class="dir" title="lower is better">&darr;</i> 8.9&nbsp;km below PredRNN-V2</em></div>
+        </div>
+        <p class="fold-h">Eddies drift the way the ocean says they should. <span>No drift law is given.</span></p>
+        <div class="bento">
+          <div class="tile span-2"><p class="tile-kicker">Westward drift by latitude</p><p class="big-stat g-ocean" data-sheen>r = 0.98</p><p class="tile-text">forecast against observed 15-day drift, slope 1.14.</p></div>
+          <div class="tile span-2"><p class="tile-kicker">Antarctic Circumpolar Current</p><p class="big-stat g-ocean" data-sheen>50&ndash;60&deg;S</p><p class="tile-text">where the drift reverses to eastward, as observed.</p></div>
+          <div class="tile span-2"><p class="tile-kicker">Polarity</p><p class="big-stat g-ocean" data-sheen>Poleward</p><p class="tile-text">cyclones relative to anticyclones, both hemispheres, as in the atlas.</p></div>
+        </div>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ============================== FORECASTERS ============================== -->
+<section class="chapter" id="forecasters" aria-labelledby="fc-title">
+  <div class="wrap chapter-head">
+    <p class="eyebrow g-deep reveal">Global ocean forecasters</p>
+    <h2 class="h2 reveal" id="fc-title">Objects,<br>not maps.</h2>
+    <p class="lead reveal">Through one fixed tracker, <strong>HaiRuo's field cuts WenHai's and XiHe's eddy error by 37&ndash;43%</strong>; as objects, by <strong>77&ndash;78%</strong>.</p>
+  </div>
+  <div class="wrap">
+      <div class="tile reveal fc-slope">
+        <p class="tile-kicker">Eddy-centre error over forecast days 1&ndash;10 (km) <i class="dir" title="lower is better">&darr;</i> · Test48 · one fixed tracker</p>
+        <div class="slope-scroll"><svg class="slope" viewBox="0 0 680 400" role="img" aria-label="Day-0 state held fixed versus forecast. WenHai and XiHe start from the same GLORYS12 state at 42.9 km and degrade to 47.1 and 51.6 km. HaiRuo starts from day-0 altimetry at 32.3 km and improves to 29.5 km, close to the tracker on the true altimetry at 29.0 km. HaiRuo's trajectories, forecast as objects, score 10.1 km.">
+          <g class="sl-grid">
+            <line x1="96" x2="640" y1="360" y2="360"/><line x1="96" x2="640" y1="300" y2="300"/><line x1="96" x2="640" y1="240" y2="240"/><line x1="96" x2="640" y1="180" y2="180"/><line x1="96" x2="640" y1="120" y2="120"/><line x1="96" x2="640" y1="60" y2="60"/>
+            <text x="84" y="364">0</text><text x="84" y="304">10</text><text x="84" y="244">20</text><text x="84" y="184">30</text><text x="84" y="124">40</text><text x="84" y="64">50 km</text>
+          </g>
+          <line class="sl-col" x1="170" x2="170" y1="40" y2="360"/><line class="sl-col" x1="470" x2="470" y1="40" y2="360"/>
+          <text class="sl-head" x="170" y="388" text-anchor="middle">Day-0 state, held fixed</text>
+          <text class="sl-head" x="470" y="388" text-anchor="middle">Forecast</text>
+          <line class="sl-floor" x1="120" x2="650" y1="186" y2="186"/>
+          <text class="sl-floor-t" x="184" y="205">tracker on the true altimetry · 29.0</text>
+          <path class="sl-line other" pathLength="1" d="M170 102.6 L470 50.4"/>
+          <path class="sl-line other" pathLength="1" d="M170 102.6 L470 77.4"/>
+          <path class="sl-line us" pathLength="1" d="M170 166.2 L470 183"/>
+          <path class="sl-drop" pathLength="1" d="M470 183 L470 299.4"/>
+          <circle class="sl-dot other s0" cx="170" cy="102.6" r="6"/><circle class="sl-dot us s0" cx="170" cy="166.2" r="6"/>
+          <circle class="sl-dot other s1" cx="470" cy="50.4" r="6"/><circle class="sl-dot other s1" cx="470" cy="77.4" r="6"/><circle class="sl-dot us s1" cx="470" cy="183" r="6"/>
+          <circle class="sl-obj" cx="470" cy="299.4" r="8"/>
+          <text class="sl-t s0" x="156" y="98" text-anchor="end">GLORYS12 · 42.9</text>
+          <text class="sl-t us s0" x="156" y="162" text-anchor="end">Altimetry · 32.3</text>
+          <text class="sl-t s1" x="484" y="55">XiHe · 51.6</text>
+          <text class="sl-t s1" x="484" y="82">WenHai · 47.1</text>
+          <text class="sl-t us s1" x="484" y="176">HaiRuo field · 29.5</text>
+          <text class="sl-t obj" x="486" y="304">HaiRuo as objects · 10.1</text>
+        </svg></div>
+        <p class="tile-note">Held fixed: day 0 carried unchanged for ten days.</p>
+      </div>
+      <div class="fc-row2">
+        <div class="tile reveal">
+          <p class="tile-kicker">The 37.0&nbsp;km between WenHai and HaiRuo's trajectories · Test48</p>
+          <div class="decomp" role="img" aria-label="Of 37.0 km: 18.8 km from forecasting eddies as objects rather than extracting them from a map; 3.3 km from following the moving ocean rather than holding day 0 fixed; 10.6 km from starting from altimetry rather than the GLORYS12 reanalysis state; 4.3 km from WenHai's own degradation beyond its initial state.">
+            <i class="d1" style="--w:18.8"></i><i class="d2" style="--w:3.3"></i><i class="d3" style="--w:10.6"></i><i class="d4" style="--w:4.3"></i>
+          </div>
+          <ul class="decomp-key">
+            <li><i class="d1"></i><span><b>18.8&nbsp;km</b> objects, not maps</span></li>
+            <li><i class="d2"></i><span><b>3.3&nbsp;km</b> the moving ocean, not a frozen day 0</span></li>
+            <li><i class="d3"></i><span><b>10.6&nbsp;km</b> altimetry, not reanalysis, at the start</span></li>
+            <li><i class="d4"></i><span><b>4.3&nbsp;km</b> WenHai's own degradation <small>(XiHe: 8.7)</small></span></li>
+          </ul>
+        </div>
+        <div class="fc-facts reveal">
+          <div><b data-sheen>10.1<small> km</small></b><span>trajectories on Test48, 79&ndash;80% lower</span></div>
+          <div><b data-sheen>11.2<small> km</small></b><span>whole ocean, vs 48.0 and 52.0</span></div>
+          <div><b data-sheen>0.52<small> km</small></b><span>HaiRuo's field to the true altimetry</span></div>
+        </div>
+      </div>
+  </div>
+</section>
+
+<!-- How it works: the two pieces -->
+<section class="pillars wrap" aria-labelledby="pillars-title">
+  <h2 class="pillars-title reveal" id="pillars-title">Fields from a foundation model.<br><span class="dim-text">Eddies from an object decoder.</span></h2>
+  <div class="pillars-grid">
+    <div class="pillars-flow" aria-hidden="true"><i></i></div>
+    <div class="pillar reveal">
+      <p class="pillar-label g-ocean">HaiRuo-1B</p>
+      <svg class="pg pg-pyr" viewBox="0 0 112 44" aria-hidden="true"><path d="M0 6H112" stroke-dasharray="16 3.2"/><path d="M0 22H112" stroke-dasharray="9.04 2.4"/><path d="M0 38H112" stroke-dasharray="4.08 1.6"/></svg>
+      <p class="pillar-num" data-sheen><span data-count="1.05" data-decimals="2">1.05</span><small>B</small></p>
+      <p class="pillar-text">parameters, pretrained on 24 years of altimetry without labels.</p>
+      <a class="more" href="#pretraining">Learn more</a>
+    </div>
+    <div class="pillar reveal">
+      <p class="pillar-label g-violet">XuanJi</p>
+      <svg class="pg pg-rings" viewBox="0 0 112 44" aria-hidden="true"><path class="pg-path" pathLength="1" d="M6 36C30 34 44 12 106 9"/><g style="--d:.5s" transform="translate(18 35)"><circle r="7"/><circle r="3.4"/><circle class="c" r="1.4"/></g><g style="--d:.8s" transform="translate(54 21)"><circle r="7"/><circle r="3.4"/><circle class="c" r="1.4"/></g><g style="--d:1.1s" transform="translate(98 9.6)"><circle r="7"/><circle r="3.4"/><circle class="c" r="1.4"/></g></svg>
+      <p class="pillar-num" data-sheen>&minus;<span data-count="2.5" data-decimals="1">2.5</span><small>km</small></p>
+      <p class="pillar-text">of 15-day error by following each eddy; 2.9&nbsp;km fine-tuned jointly.</p>
+      <a class="more" href="#xuanji">Learn more</a>
+    </div>
+    <div class="pillar reveal">
+      <p class="pillar-label g-coral">Open release</p>
+      <svg class="pg pg-stack" viewBox="0 0 112 44" aria-hidden="true"><rect style="--d:.3s" x="1" y="27" width="64" height="12" rx="4"/><rect style="--d:.5s" x="13" y="15" width="64" height="12" rx="4"/><rect style="--d:.7s" x="25" y="3" width="64" height="12" rx="4"/></svg>
+      <p class="pillar-num" data-sheen>v1.0</p>
+      <p class="pillar-text">Code and configurations today. Weights: coming soon.</p>
+      <a class="more" href="#release">Model zoo</a>
+    </div>
+  </div>
+  <p class="pillars-more reveal"><button type="button" class="linkbtn" data-figure="teaser">Open paper Figure 1</button></p>
+</section>
+
+<!-- ============================== HAIRUO-1B ============================== -->
+<section class="chapter mist has-bg" id="pretraining" aria-labelledby="pre-title">
+  <div class="sec-bg sec-bg-waves" aria-hidden="true"><img src="assets/bg/bg_autumn_flood.jpg" alt="" width="1408" height="785" decoding="async"></div>
+  <p class="sec-credit" aria-hidden="true">Ma Yuan · 秋水廻波 · Southern Song</p>
+  <div class="wrap chapter-head">
+    <p class="eyebrow g-ocean reveal">HaiRuo-1B</p>
+    <h2 class="h2 reveal" id="pre-title">Pretrained on what<br>satellites see.</h2>
+    <p class="lead reveal"><strong>24 years of altimetry.</strong> No labels, no reanalysis.</p>
+  </div>
+
+  <div class="wrap">
+    <div class="tline reveal" role="img" aria-label="Data timeline: 1993 to 2016, 8,722 daily windows for pretraining without labels and 1,024 labelled windows from four regions; 2017 to 2019, Dev48 for development; 2020 to 2022, Test48 and the global evaluation of 114,546 eddies.">
+      <div class="tl-bar"><i class="tl-pre"></i><i class="tl-dev"></i><i class="tl-test"></i></div>
+      <div class="tl-years"><span style="--x:0">1993</span><span style="--x:80">2016</span><span style="--x:90">2019</span><span style="--x:100">2022</span></div>
+      <div class="tl-labels">
+        <div class="tl-l pre"><b>8,722</b><span>windows without labels, 1993&ndash;2016</span></div>
+        <div class="tl-l dev"><b>Dev48</b><span>development, 2017&ndash;2019</span></div>
+        <div class="tl-l test"><b>114,546</b><span>test eddies, 2020&ndash;2022</span></div>
+      </div>
+    </div>
+
+    <div class="spec-grid reveal">
+      <div class="spec"><b><span data-count="1.05" data-decimals="2">1.05</span><small> B</small></b><span>parameters</span></div>
+      <div class="spec"><b><span data-count="93">93</span><small> epochs</small></b><span>without labels</span></div>
+      <div class="spec"><b>0.5&deg;</b><span>tokens</span></div>
+      <div class="spec"><b>30<small> days</small></b><span>in, 15 out</span></div>
+      <div class="spec"><b><span data-count="36">36</span></b><span>eddy-focused blocks</span></div>
+      <div class="spec"><b><span data-count="240">240</span></b><span>route-memory tokens</span></div>
+    </div>
+
+  </div>
+  <div class="wrap-wide block">
+      <div class="archh reveal" id="archh">
+        <div class="archh-head"><p class="tile-kicker">Architecture</p><p class="tile-title">Inside one forecast.</p></div>
+        <div class="archh-scroll"><svg class="archh-svg" id="archh-svg" viewBox="0 0 1224 1060" role="img" aria-label="HaiRuo architecture. HaiRuo-1B: 30 days of 10-channel altimetry become 0.5-degree spherical tokens and 15 time steps (8 memory slots and 7 explicit days); 36 eddy-focused blocks on a pyramid at 0.5, 1 and 2 degrees; a field decoder with 240 route-memory tokens forecasts six fields for 15 days as residuals from the last day. XuanJi: a spatial stem reads 7 days of altimetry, 7 past masks, the forecast and per-lead features; three heads give fields, masks and a proposal path; object attention samples rings around each eddy, reduces them to modes m = 0, 1, 2, attends across 15 lead tokens, averages four refiners and repeats for three look-ahead rounds. Training: pretraining without labels on 8,722 windows with future prediction, masked reconstruction and flow-aligned contrast; fine-tuning with XuanJi on 1,024 labelled windows."></svg></div>
+        <p class="archh-hint">Swipe sideways to see the whole diagram.</p>
+        <p class="caption">One pass from 30 days of maps to fields, masks and every eddy's path. <button type="button" class="linkbtn" data-figure="overview">Open paper Figure 2</button></p>
+      </div>
+      <figure class="paperfig paper-white reveal fig2-mobile">
+        <button class="paperfig-btn" type="button" data-figure="overview" aria-label="Enlarge Figure 2"><img src="assets/fig/fig2_overview.png" width="1513" height="605" alt="Figure 2: HaiRuo-1B turns 30 days of altimetry into spherical tokens, compresses time at two rates and applies spatio-temporal blocks; its per-lead features and forecast are injected into XuanJi's spatial stem and proposal heads; XuanJi object attention samples the forecast and the backbone along every predicted path and refines all 15 leads in three look-ahead rounds over four refiners." loading="lazy" decoding="async"></button>
+        <figcaption><b>Figure 2.</b> XuanJi reads the HaiRuo-1B forecast into fields, masks and trajectories.</figcaption>
+      </figure>
+  </div>
+  <div class="wrap">
+    <div class="block">
+      <div class="block-head">
+        <h3 class="h3 reveal">The gain comes from pretraining.</h3>
+        <p class="lead reveal">Frozen, it brings all of the field gain, most of the mask gain and over half of the track gain.</p>
+      </div>
+      <div class="bento">
+        <div class="tile span-4 reveal">
+          <div class="gl-top">
+            <p class="tile-kicker">Gain over the decoder alone · Dev48 · longer bar = better</p>
+            <div class="seg seg-sm" role="group" aria-label="Endpoint">
+              <button type="button" data-metric="field" aria-pressed="true">Field skill <i class="dir" title="higher is better">&uarr;</i></button>
+              <button type="button" data-metric="miou" aria-pressed="false">mIoU <i class="dir" title="higher is better">&uarr;</i></button>
+              <button type="button" data-metric="d15" aria-pressed="false">15-day error <i class="dir" title="lower is better">&darr;</i></button>
+            </div>
+          </div>
+          <div class="gl" id="scale-ladder" role="img" aria-label="Gain over the decoder alone. Field skill: 200M with 1-degree tokens +0.014; 200M with half-degree tokens +0.059; 1B with 1-degree tokens +0.095; HaiRuo-1B +0.141. mIoU: +0.06, +0.34, +0.51, +1.09 points. 15-day centre error: +0.04, -0.06, -0.45, -1.19 km.">
+            <div class="gl-row"><span>200M &middot; 1&deg; tokens</span><div class="gl-bar"><i></i></div><b></b></div>
+            <div class="gl-row"><span>200M &middot; 0.5&deg; tokens</span><div class="gl-bar"><i></i></div><b></b></div>
+            <div class="gl-row"><span>1B &middot; 1&deg; tokens</span><div class="gl-bar"><i></i></div><b></b></div>
+            <div class="gl-row us"><span>HaiRuo-1B &middot; 0.5&deg;</span><div class="gl-bar"><i></i></div><b></b></div>
+          </div>
+          <div class="gl-axis" aria-hidden="true"><span></span><div id="gl-ticks"><span></span><span></span><span></span><span></span></div><span></span></div>
+          <p class="tile-note" id="gl-note">0 = decoder alone.</p>
+        </div>
+        <div class="tile span-2 reveal">
+          <p class="tile-kicker">Field skill <i class="dir" title="higher is better">&uarr;</i>, same decoder</p>
+          <p class="big-stat g-ocean" data-sheen><span data-count="0.77" data-decimals="2">0.77</span></p>
+          <p class="tile-text">from <b>0.63</b>, plus <b>1.09</b> mIoU points and <b>1.19&nbsp;km</b>.</p>
+        </div>
+        <div class="tile span-3 reveal">
+          <p class="tile-kicker">Against training from scratch · 15-day error <i class="dir" title="lower is better">&darr;</i></p>
+          <p class="big-stat"><span data-count="1.35" data-decimals="2">1.35</span><small> km</small></p>
+          <p class="tile-text">less 15-day error than the same model trained from scratch.</p>
+        </div>
+        <div class="tile span-3 reveal">
+          <p class="tile-kicker">Plain base heads, frozen · 15-day error <i class="dir" title="lower is better">&darr;</i></p>
+          <p class="big-stat"><span data-count="25.8" data-decimals="1">25.8</span><small> km</small></p>
+          <p class="tile-text">beats all fourteen baselines and self-supervised PredRNN-V2 (<b>26.6&nbsp;km</b> fine-tuned).</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== XUANJI (deep band) ============================== -->
+<section class="chapter deep has-bg" id="xuanji" aria-labelledby="xj-title">
+  <div class="sec-bg sec-bg-stars" aria-hidden="true"><img src="assets/bg/bg_planisphere.jpg" alt="" width="2000" height="2000" decoding="async"></div>
+  <div class="glints" id="glints" aria-hidden="true"></div>
+  <p class="sec-credit on-deep" aria-hidden="true">Suzhou star chart · engraved 1247</p>
+  <div class="wrap chapter-head">
+    <p class="eyebrow g-violet reveal">XuanJi</p>
+    <h2 class="h2 reveal" id="xj-title">Follow the eddy.<br>Read the forecast where it is going.</h2>
+    <p class="lead reveal">Rings around each eddy's predicted position, in its own moving frame. <strong>Three look-ahead rounds refine all 15 days at once.</strong></p>
+  </div>
+
+  <div class="wrap-wide">
+    <div class="trio reveal">
+      <div class="trio-item"><b>&minus;<span data-count="1.9" data-decimals="1">1.9</span><small> km</small></b><span>object attention, frozen HaiRuo-1B</span><em>Masks and fields unchanged.</em></div>
+      <div class="trio-item"><b>&minus;<span data-count="2.5" data-decimals="1">2.5</span><small> km</small></b><span>all of XuanJi, frozen HaiRuo-1B</span><em>2.9&nbsp;km with joint fine-tuning.</em></div>
+      <div class="trio-item"><b>2.5&ndash;3.3<small> km</small></b><span>on six published backbones</span><em>Same heads.</em></div>
+    </div>
+  </div>
+
+  <div class="wrap block">
+    <div class="split">
+      <div>
+        <h3 class="h3 reveal">2.9&nbsp;km,<br>step by step.</h3>
+        
+      </div>
+      <div class="tile reveal">
+        <p class="tile-kicker">15-day centre error on Dev48 (km) <i class="dir" title="lower is better">&darr;</i> · three seeds</p>
+        <div class="wf" role="img" aria-label="Frozen HaiRuo-1B with the base heads 25.76 km; plus two-round object attention 23.85 km (minus 1.91); plus four refiners over three look-ahead rounds with EMA 23.29 km (minus 0.56); plus joint fine-tuning, HaiRuo, 22.87 km (minus 0.42); total minus 2.89 km.">
+          <div class="wf-row base"><span>Frozen HaiRuo-1B, base heads</span><div class="wf-track"><i style="--a:22;--b:25.76"></i></div><b>25.76</b></div>
+          <div class="wf-row step"><span>+ object attention, two rounds</span><div class="wf-track"><i style="--a:23.85;--b:25.76"></i></div><b>&minus;1.91</b></div>
+          <div class="wf-row step"><span>+ four refiners, three rounds, EMA</span><div class="wf-track"><i style="--a:23.29;--b:23.85"></i></div><b>&minus;0.56</b></div>
+          <div class="wf-row step"><span>+ joint fine-tuning</span><div class="wf-track"><i style="--a:22.87;--b:23.29"></i></div><b>&minus;0.42</b></div>
+          <div class="wf-row total"><span>HaiRuo</span><div class="wf-track"><i class="ghost" style="--a:22.87;--b:25.76"></i><i style="--a:22;--b:22.87"></i></div><b>22.87 <em>&minus;2.89</em></b></div>
+        </div>
+        <div class="wf-axis" aria-hidden="true"><span></span><div><span>22</span><span>23</span><span>24</span><span>25</span><span>26 km</span></div><span></span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap block">
+    <div class="split">
+      <div>
+        <h3 class="h3 reveal">It helps every backbone it reads.</h3>
+        <p class="lead reveal">Every backbone gains 2.49&ndash;3.34&nbsp;km. <strong>Frozen HaiRuo-1B still leads all six.</strong></p>
+      </div>
+      <div class="tile reveal">
+        <p class="tile-kicker">15-day centre error on Dev48 (km) <i class="dir" title="lower is better">&darr;</i></p>
+        <div class="dkey"><span><i style="background:#5b6f88"></i>same heads, no object attention</span><span><i style="background:linear-gradient(135deg,#a58cff,#d27cff)"></i>with XuanJi object attention</span></div>
+        <div class="dumb" role="img" aria-label="15-day centre error on Dev48 without and with object attention: HaiRuo-1B 25.76 to 23.85; PredRNN-V2 27.18 to 24.42; PhyDNet 27.43 to 24.57; ConvLSTM 27.94 to 24.60; SimVPv2/gSTA 27.62 to 24.74; TAU 27.57 to 24.83; SimVP 27.78 to 25.29">
+          <!-- scale: 22 km = 0 %, 29 km = 100 % -->
+          <div class="drow us"><span>HaiRuo-1B</span><div class="dtrack"><i class="dline" style="--a:26.4;--b:53.7"></i><i class="ddot b" style="--b:53.7"></i><i class="ddot a" style="--a:26.4;--b:53.7"></i></div><b>23.85 <em>&minus;1.91</em></b></div>
+          <div class="drow"><span>PredRNN-V2</span><div class="dtrack"><i class="dline" style="--a:34.6;--b:74.0"></i><i class="ddot b" style="--b:74.0"></i><i class="ddot a" style="--a:34.6;--b:74.0"></i></div><b>24.42 <em>&minus;2.75</em></b></div>
+          <div class="drow"><span>PhyDNet</span><div class="dtrack"><i class="dline" style="--a:36.7;--b:77.6"></i><i class="ddot b" style="--b:77.6"></i><i class="ddot a" style="--a:36.7;--b:77.6"></i></div><b>24.57 <em>&minus;2.86</em></b></div>
+          <div class="drow"><span>ConvLSTM</span><div class="dtrack"><i class="dline" style="--a:37.1;--b:84.9"></i><i class="ddot b" style="--b:84.9"></i><i class="ddot a" style="--a:37.1;--b:84.9"></i></div><b>24.60 <em>&minus;3.34</em></b></div>
+          <div class="drow"><span>SimVPv2/gSTA</span><div class="dtrack"><i class="dline" style="--a:39.1;--b:80.3"></i><i class="ddot b" style="--b:80.3"></i><i class="ddot a" style="--a:39.1;--b:80.3"></i></div><b>24.74 <em>&minus;2.88</em></b></div>
+          <div class="drow"><span>TAU</span><div class="dtrack"><i class="dline" style="--a:40.4;--b:79.6"></i><i class="ddot b" style="--b:79.6"></i><i class="ddot a" style="--a:40.4;--b:79.6"></i></div><b>24.83 <em>&minus;2.74</em></b></div>
+          <div class="drow"><span>SimVP</span><div class="dtrack"><i class="dline" style="--a:47.0;--b:82.6"></i><i class="ddot b" style="--b:82.6"></i><i class="ddot a" style="--a:47.0;--b:82.6"></i></div><b>25.29 <em>&minus;2.49</em></b></div>
+        </div>
+        <div class="axis" aria-hidden="true" style="grid-template-columns:minmax(112px,150px) 1fr 104px"><span></span><div><span>22</span><span>25.5</span><span>29 km</span></div><span></span></div>
+        <p class="tile-note">Dev48, three seeds.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== CHECKPOINTS ============================== -->
+<section class="chapter mist" id="release" aria-labelledby="rel-title">
+  <div class="wrap chapter-head">
+    <p class="eyebrow g-ocean reveal">Checkpoints · v1.0</p>
+    <h2 class="h2 reveal" id="rel-title">Open weights.</h2>
+    <p class="lead reveal">Safetensors, configurations and SHA-256 checksums.</p>
+  </div>
+  <div class="wrap">
+    <div class="zoo">
+      <article class="ck feat reveal">
+        <div class="ck-top"><h3><span class="g-text">HaiRuo-1B</span></h3><div class="ck-meta"><span>1.05 B</span><span>fp32</span><span>4.2 GB</span></div></div>
+        <p>The pretrained backbone: 30 days in, 15 days of six fields out.</p>
+        <div class="ck-files"><a href="https://github.com/xkqin/HaiRuo/blob/main/configs/hairuo_1b_pretrained.config.json">hairuo_1b_pretrained.config.json</a><span>Weights: Coming soon</span></div>
+      </article>
+      <article class="ck reveal">
+        <div class="ck-top"><h3><span class="g-text">HaiRuo</span> backbone</h3><div class="ck-meta"><span>1.05 B</span><span>bf16</span><span>2.1 GB</span></div></div>
+        <p>HaiRuo-1B fine-tuned jointly with XuanJi (seed 42).</p>
+        <div class="ck-files"><a href="https://github.com/xkqin/HaiRuo/blob/main/configs/hairuo_1b_pretrained.config.json">hairuo_1b_pretrained.config.json</a><span>Weights: Coming soon</span></div>
+      </article>
+      <article class="ck reveal">
+        <div class="ck-top"><h3><span class="g-text v">XuanJi</span> decoder</h3><div class="ck-meta"><span>7.85 M</span><span>fp32</span><span>31 MB</span></div></div>
+        <p>HaiRuo's decoder, and one for frozen HaiRuo-1B.</p>
+        <div class="ck-files"><a href="https://github.com/xkqin/HaiRuo/blob/main/configs/xuanji_decoder_hairuo_s42.config.json">xuanji_decoder_hairuo_s42.config.json</a><a href="https://github.com/xkqin/HaiRuo/blob/main/configs/xuanji_decoder_frozen_hairuo_1b_s42.config.json">xuanji_decoder_frozen_hairuo_1b_s42.config.json</a><span>Weights: Coming soon</span></div>
+      </article>
+      <article class="ck reveal">
+        <div class="ck-top"><h3><span class="g-text">HaiRuo-200M</span></h3><div class="ck-meta"><span>229 M</span><span>fp32</span><span>0.9 GB</span></div></div>
+        <p>The scaling-study backbone, 1&deg; tokens.</p>
+        <div class="ck-files"><a href="https://github.com/xkqin/HaiRuo/blob/main/configs/hairuo_200m_pretrained.config.json">hairuo_200m_pretrained.config.json</a><span>Weights: Coming soon</span></div>
+      </article>
+      <article class="ck reveal">
+        <div class="ck-top"><h3>Configs &amp; checksums</h3><div class="ck-meta"><span>JSON</span><span>SHA-256</span></div></div>
+        <p>Configs, normalisation statistics, SHA-256.</p>
+        <div class="ck-files"><a href="https://github.com/xkqin/HaiRuo/tree/main/configs">configs/</a><a href="https://github.com/xkqin/HaiRuo/blob/main/checkpoints/SHA256SUMS.txt">SHA256SUMS.txt</a></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== CLOSING ============================== -->
+<section class="closing has-bg" aria-labelledby="closing-title">
+  <div class="sec-bg sec-bg-sea" aria-hidden="true"><img src="assets/bg/bg_clouds_sea.jpg" alt="" width="1708" height="534" loading="lazy" decoding="async"></div>
+  <div class="wrap">
+    <p class="wordmark reveal" id="closing-title">HaiRuo</p>
+    <p class="closing-sub reveal">Fifteen days of every eddy,<br>read from thirty days of sea level.</p>
+    <div class="hero-actions reveal">
+      <a class="btn" href="https://github.com/xkqin/HaiRuo">GitHub Repository</a>
+      <a class="link" href="#release">Model Zoo</a>
+    </div>
+  </div>
+  <p class="closing-caption">Ma Yuan · 云生沧海 · Clouds Rising from the Green Sea</p>
+</section>
+
+<section class="cite wrap" id="cite" aria-labelledby="cite-title">
+  <div class="cite-card reveal">
+    <div class="cite-top"><h2 id="cite-title">BibTeX</h2><button type="button" id="copy-bib">Copy</button></div>
+    <pre id="bib">@article{qin2026hairuo,
+  title   = {HaiRuo: Forecasting Ocean Eddies as Fields and Objects
+             with a Satellite-Altimetry Foundation Model},
+  author  = {Qin, Xukun and Sun, Haochen and Tian, Yuyang and Chen, Ge},
+  journal = {arXiv preprint},
+  year    = {2026}
+}</pre>
+  </div>
+</section>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot-bottom">
+      <p>Numbers from the paper; the &ldquo;In motion&rdquo; counts are that window's own. Currents and forecasts: real DUACS data.</p>
+      <p>Section art, public domain: Ma Yuan, <i>Water Album</i> (秋水廻波, 云生沧海), Palace Museum; Suzhou star chart, 1247.</p>
+    </div>
+  </div>
+</footer>
+
+<dialog class="dialog" id="fig-dialog" aria-labelledby="dialog-title">
+  <div class="dialog-bar"><h2 id="dialog-title">Figure</h2><button class="round-btn dialog-close" type="button" aria-label="Close"><svg viewBox="0 0 16 16"><path d="M3 3l10 10M13 3 3 13"/></svg></button></div>
+  <div class="dialog-content" id="dialog-content"></div>
+  <p class="dialog-caption" id="dialog-caption"></p>
+</dialog>
+</body>
+</html>

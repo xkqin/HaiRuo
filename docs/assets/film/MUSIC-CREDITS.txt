@@ -1,0 +1,5 @@
+HaiRuo films - credits
+Music: "Adventure" by Alexander Nakarada (CreatorChords), free-stock-music.com, licensed under Creative Commons Attribution 4.0 (https://creativecommons.org/licenses/by/4.0/). Edited: re-cut on whole bars (6 bars repeated, 25 bars removed) to fit the picture.
+Narration: Kokoro-82M (Apache-2.0), voice af_heart. Fonts: Inter, LXGW WenKai (SIL OFL).
+Satellite altimetry: CMEMS DUACS L4 (SEALEVEL_GLO_PHY_L4_MY_008_047). Numbers and forecasts: the HaiRuo paper (CVPR 2027 submission).
+Made with Remotion.
